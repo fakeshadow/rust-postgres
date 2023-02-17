@@ -129,7 +129,7 @@ where
     frontend::startup_message(params, &mut buf).map_err(Error::encode)?;
 
     stream
-        .send(FrontendMessage::Raw(buf.freeze()))
+        .send(FrontendMessage::Raw(buf))
         .await
         .map_err(Error::io)
 }
@@ -214,7 +214,7 @@ where
     frontend::password_message(password, &mut buf).map_err(Error::encode)?;
 
     stream
-        .send(FrontendMessage::Raw(buf.freeze()))
+        .send(FrontendMessage::Raw(buf))
         .await
         .map_err(Error::io)
 }
@@ -275,7 +275,7 @@ where
     let mut buf = BytesMut::new();
     frontend::sasl_initial_response(mechanism, scram.message(), &mut buf).map_err(Error::encode)?;
     stream
-        .send(FrontendMessage::Raw(buf.freeze()))
+        .send(FrontendMessage::Raw(buf))
         .await
         .map_err(Error::io)?;
 
@@ -293,7 +293,7 @@ where
     let mut buf = BytesMut::new();
     frontend::sasl_response(scram.message(), &mut buf).map_err(Error::encode)?;
     stream
-        .send(FrontendMessage::Raw(buf.freeze()))
+        .send(FrontendMessage::Raw(buf))
         .await
         .map_err(Error::io)?;
 

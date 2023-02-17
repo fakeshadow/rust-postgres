@@ -49,14 +49,14 @@ impl Stream for CopyInReceiver {
                 let mut buf = BytesMut::new();
                 frontend::copy_done(&mut buf);
                 frontend::sync(&mut buf);
-                Poll::Ready(Some(FrontendMessage::Raw(buf.freeze())))
+                Poll::Ready(Some(FrontendMessage::Raw(buf)))
             }
             None => {
                 self.done = true;
                 let mut buf = BytesMut::new();
                 frontend::copy_fail("", &mut buf).unwrap();
                 frontend::sync(&mut buf);
-                Poll::Ready(Some(FrontendMessage::Raw(buf.freeze())))
+                Poll::Ready(Some(FrontendMessage::Raw(buf)))
             }
         }
     }

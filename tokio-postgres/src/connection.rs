@@ -215,7 +215,7 @@ where
                     self.state = State::Terminating;
                     let mut request = BytesMut::new();
                     frontend::terminate(&mut request);
-                    RequestMessages::Single(FrontendMessage::Raw(request.freeze()))
+                    RequestMessages::Single(FrontendMessage::Raw(request))
                 }
                 Poll::Ready(None) => {
                     trace!(

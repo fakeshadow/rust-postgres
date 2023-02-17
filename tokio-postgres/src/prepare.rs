@@ -5,7 +5,7 @@ use crate::error::SqlState;
 use crate::types::{Field, Kind, Oid, Type};
 use crate::{query, slice_iter};
 use crate::{Column, Error, Statement};
-use bytes::Bytes;
+use bytes::BytesMut;
 use fallible_iterator::FallibleIterator;
 use futures_util::{pin_mut, TryStreamExt};
 use log::debug;
@@ -111,7 +111,12 @@ fn prepare_rec<'a>(
     Box::pin(prepare(client, query, types))
 }
 
-fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Result<Bytes, Error> {
+fn encode(
+    client: &InnerClient,
+    name: &str,
+    query: &str,
+    types: &[Type],
+) -> Result<BytesMut, Error> {
     if types.is_empty() {
         debug!("preparing query {}: {}", name, query);
     } else {
@@ -122,7 +127,7 @@ fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Resu
         frontend::parse(name, query, types.iter().map(Type::oid), buf).map_err(Error::encode)?;
         frontend::describe(b'S', name, buf).map_err(Error::encode)?;
         frontend::sync(buf);
-        Ok(buf.split().freeze())
+        Ok(buf.split())
     })
 }
 

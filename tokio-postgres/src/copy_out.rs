@@ -2,7 +2,7 @@ use crate::client::{InnerClient, Responses};
 use crate::codec::FrontendMessage;
 use crate::connection::RequestMessages;
 use crate::{query, slice_iter, Error, Statement};
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use futures_util::{ready, Stream};
 use log::debug;
 use pin_project_lite::pin_project;
@@ -22,7 +22,7 @@ pub async fn copy_out(client: &InnerClient, statement: Statement) -> Result<Copy
     })
 }
 
-async fn start(client: &InnerClient, buf: Bytes) -> Result<Responses, Error> {
+async fn start(client: &InnerClient, buf: BytesMut) -> Result<Responses, Error> {
     let mut responses = client.send(RequestMessages::Single(FrontendMessage::Raw(buf)))?;
 
     match responses.next().await? {

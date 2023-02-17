@@ -506,7 +506,7 @@ impl Client {
 
                 let buf = self.client.inner().with_buf(|buf| {
                     frontend::query("ROLLBACK", buf).unwrap();
-                    buf.split().freeze()
+                    buf.split()
                 });
                 let _ = self
                     .client

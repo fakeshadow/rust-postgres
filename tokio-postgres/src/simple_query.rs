@@ -3,7 +3,7 @@ use crate::codec::FrontendMessage;
 use crate::connection::RequestMessages;
 use crate::query::extract_row_affected;
 use crate::{Error, SimpleQueryMessage, SimpleQueryRow};
-use bytes::Bytes;
+use bytes::BytesMut;
 use fallible_iterator::FallibleIterator;
 use futures_util::{ready, Stream};
 use log::debug;
@@ -63,10 +63,10 @@ pub async fn batch_execute(client: &InnerClient, query: &str) -> Result<(), Erro
     }
 }
 
-fn encode(client: &InnerClient, query: &str) -> Result<Bytes, Error> {
+fn encode(client: &InnerClient, query: &str) -> Result<BytesMut, Error> {
     client.with_buf(|buf| {
         frontend::query(query, buf).map_err(Error::encode)?;
-        Ok(buf.split().freeze())
+        Ok(buf.split())
     })
 }
 

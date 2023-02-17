@@ -3,7 +3,7 @@ use crate::codec::FrontendMessage;
 use crate::connection::RequestMessages;
 use crate::types::{BorrowToSql, IsNull};
 use crate::{Error, Portal, Row, Statement};
-use bytes::{Bytes, BytesMut};
+use bytes::BytesMut;
 use futures_util::{ready, Stream};
 use log::{debug, log_enabled, Level};
 use pin_project_lite::pin_project;
@@ -65,7 +65,7 @@ pub async fn query_portal(
     let buf = client.with_buf(|buf| {
         frontend::execute(portal.name(), max_rows, buf).map_err(Error::encode)?;
         frontend::sync(buf);
-        Ok(buf.split().freeze())
+        Ok(buf.split())
     })?;
 
     let responses = client.send(RequestMessages::Single(FrontendMessage::Raw(buf)))?;
@@ -128,7 +128,7 @@ where
     }
 }
 
-async fn start(client: &InnerClient, buf: Bytes) -> Result<Responses, Error> {
+async fn start(client: &InnerClient, buf: BytesMut) -> Result<Responses, Error> {
     let mut responses = client.send(RequestMessages::Single(FrontendMessage::Raw(buf)))?;
 
     match responses.next().await? {
@@ -139,7 +139,11 @@ async fn start(client: &InnerClient, buf: Bytes) -> Result<Responses, Error> {
     Ok(responses)
 }
 
-pub fn encode<P, I>(client: &InnerClient, statement: &Statement, params: I) -> Result<Bytes, Error>
+pub fn encode<P, I>(
+    client: &InnerClient,
+    statement: &Statement,
+    params: I,
+) -> Result<BytesMut, Error>
 where
     P: BorrowToSql,
     I: IntoIterator<Item = P>,
@@ -149,7 +153,7 @@ where
         encode_bind(statement, params, "", buf)?;
         frontend::execute("", 0, buf).map_err(Error::encode)?;
         frontend::sync(buf);
-        Ok(buf.split().freeze())
+        Ok(buf.split())
     })
 }
 

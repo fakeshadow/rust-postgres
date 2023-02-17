@@ -1,4 +1,4 @@
-use bytes::{Buf, Bytes, BytesMut};
+use bytes::{Buf, BytesMut};
 use fallible_iterator::FallibleIterator;
 use postgres_protocol::message::backend;
 use postgres_protocol::message::frontend::CopyData;
@@ -6,7 +6,7 @@ use std::io;
 use tokio_util::codec::{Decoder, Encoder};
 
 pub enum FrontendMessage {
-    Raw(Bytes),
+    Raw(BytesMut),
     CopyData(CopyData<Box<dyn Buf + Send>>),
 }
 
@@ -42,7 +42,7 @@ impl Encoder<FrontendMessage> for PostgresCodec {
 
     fn encode(&mut self, item: FrontendMessage, dst: &mut BytesMut) -> io::Result<()> {
         match item {
-            FrontendMessage::Raw(buf) => dst.extend_from_slice(&buf),
+            FrontendMessage::Raw(buf) => dst.unsplit(buf),
             FrontendMessage::CopyData(data) => data.write(dst),
         }
 
